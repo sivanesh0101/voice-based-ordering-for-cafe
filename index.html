@@ -118,50 +118,34 @@
             
 
             <div class="order-section">
-                <h2>Your Orders are</h2>
+                <h2>Your Orders</h2>
                 <div class="order-summary">
                     <table>
-                        <tr>
-                            <th>Item</th>
-                            <th>Qty.</th>
-                            <th>Price</th>
-                        </tr>
-                        <tr>
-                            <td>Cappuccino</td>
-                            <td>2</td>
-                            <td>₹230</td>
-                        </tr>
-                        <tr>
-                            <td>Cold Mocha</td>
-                            <td>4</td>
-                            <td>₹830</td>
-                        </tr>
-                        <tr>
-                            <td>Red Velvet Cake</td>
-                            <td>1</td>
-                            <td>₹415</td>
-                        </tr>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty.</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-items">
+                            <!-- Orders will be dynamically added here -->
+                        </tbody>
                     </table>
                 </div>
-    
+            
                 <div class="chatbox">
-                    <div class="chat">
-                        <div class="bot-message">
-                            <p>Welcome to Cafeteria.<br>What would you like today?</p>
-                        </div>
-                        <div class="user-message">
-                            <p>Order one Red Velvet cake.</p>
-                        </div>
-                        <div class="bot-message">
-                            <p>1 Red velvet cake added..<br>Anything else?</p>
-                        </div>
-                        
+                    <div class="chat" id="chat">
+                        <!-- Chat messages will be dynamically added here -->
                     </div>
                     <div class="chat-input">
-                        <button class="mic" id="activate-voice-assistant" onclick="startVoiceRecognition()"><img src="pics/mic copy.png"></button>
+                        <button class="mic" id="activate-voice-assistant" onclick="startVoiceRecognition()">
+                            <img src="pics/mic copy.png" alt="mic icon">
+                        </button>
                     </div>
                 </div>
             </div>
+            
         </div>
 
     
