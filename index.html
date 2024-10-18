@@ -9,3 +9,146 @@
     <link href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Cafeteria</h1>
+        </header>
+        <main>
+            <section class="menu">
+                <h2>Hot Coffee</h2>
+                <div class="items">
+                    <div class="item" onclick="addToOrder('Cappuccino')">
+                        <img src="pics/cappcinno.jpg" alt="">
+                        <p>Cappuccino</p>
+                        <p class="item-price">&#8377; 165</p> <!-- Price in Rupees -->
+                    </div>
+                    <div class="item" onclick="addToOrder('Flat White')">
+                        <img src="pics/flat_white.jpg" alt="">
+                        <p>Flat White</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Espresso')">
+                        <img src="pics/espresso-day.png" alt="">
+                        <p>Espresso</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Filter Coffee')">
+                        <img src="pics/filtercoffee.webp" alt="">
+                        <p>Filter Coffee</p>
+                        <p class="item-price">&#8377; 415</p>
+                    </div>
+                </div>
+
+                <h2>Cold Coffee</h2>
+                <div class="items">
+                    <div class="item" onclick="addToOrder('Cold Coffee')">
+                        <img src="pics/Cold-Coffee.jpg" alt="">
+                        <p>Cold Coffee</p>
+                        <p class="item-price">&#8377; 165</p> <!-- Price in Rupees -->
+                    </div>
+                    <div class="item" onclick="addToOrder('Cold Mocha')">
+                        <img src="pics/coldmocha.jpg" alt="">
+                        <p>Cold Mocha</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Belgian Chocolate')">
+                        <img src="pics/begian.jpg" alt="">
+                        <p>Belgian Chocolate</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Chocolate Shake')">
+                        <img src="pics/cholotate shakee.jpg" alt="">
+                        <p>Chocolate Shake</p>
+                        <p class="item-price">&#8377; 415</p>
+                    </div>
+                </div>
+
+                <h2>Snacks</h2>
+                <div class="items">
+                    <div class="item" onclick="addToOrder('Sandwich')">
+                        <img src="pics/sandwitch.jpg" alt="">
+                        <p>Sandwich</p>
+                        <p class="item-price">&#8377; 165</p> <!-- Price in Rupees -->
+                    </div>
+                    <div class="item" onclick="addToOrder('Garlic Bread')">
+                        <img src="pics/flat_white.jpg" alt="">
+                        <p>Garlic Bread</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Veg Burger')">
+                        <img src="pics/vegBurger.jpg" alt="">
+                        <p>Veg Burger</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Veg Pizza')">
+                        <img src="pics/vegPizza.jpg" alt="">
+                        <p>Veg Pizza</p>
+                        <p class="item-price">&#8377; 415</p>
+                    </div>
+                </div>
+
+                <h2>Dessert</h2>
+                <div class="items">
+                    <div class="item" onclick="addToOrder('Cheescake')">
+                        <img src="pics/cappcinno.jpg" alt="">
+                        <p>Cheescake</p>
+                        <p class="item-price">&#8377; 165</p> <!-- Price in Rupees -->
+                    </div>
+                    <div class="item" onclick="addToOrder('Vanilla Scoop')">
+                        <img src="pics/venilaScoop.jpg" alt="">
+                        <p>Vanilla Scoop</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Strawberry Cake')">
+                        <img src="pics/STRAWBERRY-CAKE-S-01.jpg" alt="">
+                        <p>Strawberry Cake</p>
+                        <p class="item-price">&#8377; 165</p>
+                    </div>
+                    <div class="item" onclick="addToOrder('Red Velvet Cake')">
+                        <img src="pics/redvelvet cake.webp" alt="">
+                        <p>Red Velvet Cake</p>
+                        <p class="item-price">&#8377; 415</p>
+                    </div>
+                </div>
+
+                <h2>
+                <div>
+            </section>
+            
+
+            <div class="order-section">
+                <h2>Your Orders</h2>
+                <div class="order-summary">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty.</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-items">
+                            <!-- Orders will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            
+                <div class="chatbox">
+                    <div class="chat" id="chat">
+                        <!-- Chat messages will be dynamically added here -->
+                    </div>
+                    <div class="chat-input">
+                        <button class="mic" id="activate-voice-assistant" onclick="startVoiceRecognition()">
+                            <img src="pics/mic copy.png" alt="mic icon">
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+    
+    <script src="script.js"></script>
+</body>
+</html>
