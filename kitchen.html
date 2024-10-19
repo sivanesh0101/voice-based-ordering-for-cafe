@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Orders</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Kitchen Orders</h1>
+        </header>
+        <main>
+            <h2>Order Details</h2>
+            <div id="order-details">
+                <!-- Order details will be displayed here -->
+            </div>
+        </main>
+    </div>
+    <script>
+        async function fetchOrderDetails(orderId, tableNumber) {
+            const response = await fetch(`http://127.0.0.1:5000/order_details/${orderId}/${tableNumber}`);
+            if (!response.ok) {
+                const error = await response.json();
+                document.getElementById('order-details').innerText = error.error;
+                return;
+            }
+
+            const data = await response.json();
+            displayOrderDetails(data);
+        }
+
+        function displayOrderDetails(data) {
+            const detailsDiv = document.getElementById('order-details');
+            detailsDiv.innerHTML = `<h3>Order ID: ${data.order_id}</h3>
+                                    <p>Table Number: ${data.table_number}</p>
+                                    <p>Order Date: ${data.order_date}</p>
+                                    <h4>Items:</h4>
+                                    <ul>${data.items.map(item => 
+                                        `<li>${item.quantity} x ${item.item_name} - &#8377; ${item.total}</li>`
+                                    ).join('')}</ul>
+                                    <h4>Total Amount: &#8377; ${data.total_amount}</h4>`;
+        }
+
+        // Example: Fetch order details for Order ID 1 and Table Number 1
+        fetchOrderDetails(1, 1);
+    </script>
+</body>
+</html>

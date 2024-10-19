@@ -23,6 +23,10 @@ cursor = db.cursor()
 def index():
     return render_template('index.html')  # Your HTML file
 
+@app.route('/kitchen')
+def kitchen():
+    return render_template('kitchen.html')  # Ensure this points to your kitchen HTML file
+
 @socketio.on('message')
 def handle_message(msg):
     print(f"Message: {msg}")
@@ -67,6 +71,43 @@ def place_order():
 
     except Exception as e:
         db.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# New route to fetch order details by order ID and table number
+@app.route('/order_details/<int:order_id>/<int:table_number>', methods=['GET'])
+def get_order_details(order_id, table_number):
+    try:
+        cursor.execute("""
+            SELECT o.OrderID, o.TableNumber, o.OrderDate, oi.ItemID, i.ItemName, oi.Quantity, i.Price 
+            FROM Orders o 
+            JOIN OrderItems oi ON o.OrderID = oi.OrderID 
+            JOIN Items i ON oi.ItemID = i.ItemID 
+            WHERE o.OrderID = %s AND o.TableNumber = %s
+        """, (order_id, table_number))
+        
+        order_details = cursor.fetchall()
+
+        if not order_details:
+            return jsonify({"error": "Order not found"}), 404
+        
+        response = {
+            "order_id": order_id,
+            "table_number": table_number,
+            "items": [
+                {
+                    "item_name": item[4],
+                    "quantity": item[5],
+                    "price": item[6],
+                    "total": item[5] * item[6]
+                } for item in order_details
+            ],
+            "total_amount": sum(item[5] * item[6] for item in order_details),
+            "order_date": order_details[0][2].strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        return jsonify(response)
+
+    except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
