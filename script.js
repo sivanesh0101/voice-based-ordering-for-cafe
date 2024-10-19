@@ -1,145 +1,113 @@
-let orderList = [];
+function startVoiceRecognition() {
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-IN';  // Set language to English (India)
+    recognition.interimResults = false;
 
-function addToOrder(itemName) {
-    // Item price mapping
-    const itemPrices = {
-        "Cappuccino": 165,
-        "Flat White": 165,
-        "Espresso": 165,
-        "Filter Coffee": 415,
-        "Cold Coffee": 165,
-        "Cold Mocha": 165,
-        "Belgian Chocolate": 165,
-        "Chocolate Shake": 415,
-        "Sandwich": 165,
-        "Garlic Bread": 165,
-        "Veg Burger": 165,
-        "Veg Pizza": 415,
-        "Cheescake": 165,
-        "Vanilla Scoop": 165,
-        "Strawberry Cake": 165,
-        "Red Velvet Cake": 415
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        processOrder(transcript);
     };
 
-    const itemPrice = itemPrices[itemName];
-    
-    // Check if item is already in the order list
-    let existingItem = orderList.find(order => order.name === itemName);
+    recognition.start();
+}
 
-    if (existingItem) {
-        existingItem.qty += 1;
-    } else {
-        orderList.push({
-            name: itemName,
-            qty: 1,
-            price: itemPrice
-        });
+function updateChat(sender, message) {
+    const chatMessage = document.createElement('div');
+    chatMessage.classList.add(sender);
+    chatMessage.innerText = message;
+    document.getElementById('chat').appendChild(chatMessage);
+}
+
+function processOrder(transcript) {
+    const items = {
+        "cappuccino": 50, 
+        "espresso": 60, 
+        "cold coffee": 120, 
+        "cold mocha": 150, 
+        "red velvet cake": 415,
+        "filter coffee": 70, 
+        "flat white": 40,
+        "belgian chocolate": 180,
+        "chocolate shake": 200,
+        "sandwich": 70,
+        "garlic bread": 60,
+        "veg burger": 120,
+        "veg pizza": 150,
+        "cheesecake": 165,
+        "vanilla scoop": 165,
+        "strawberry cake": 165 
+        // Add more items as needed
+    };
+
+    let matchedItem = null;
+    let quantity = 1;
+
+    // Print user's voice input
+    updateChat('user', transcript);
+
+    // Check if the transcript contains an item
+    for (const item in items) {
+        if (transcript.includes(item)) {
+            matchedItem = item;
+            break;
+        }
     }
 
-    updateOrderSummary();
-}
+    // Check for quantity in transcript (optional)
+    const qtyMatch = transcript.match(/\d+/);
+    if (qtyMatch) {
+        quantity = parseInt(qtyMatch[0]);
+    }
 
-function updateOrderSummary() {
-    const orderSummary = document.querySelector(".order-summary table");
-    const tbody = orderSummary.querySelector("tbody");
-
-    // Clear current order list
-    tbody.innerHTML = "";
-
-    let totalAmount = 0;
-
-    // Populate new order list
-    orderList.forEach(order => {
-        const row = document.createElement("tr");
-
-        const itemName = document.createElement("td");
-        itemName.textContent = order.name;
-
-        const itemQty = document.createElement("td");
-        itemQty.textContent = order.qty;
-
-        const itemPrice = document.createElement("td");
-        const price = order.qty * order.price;
-        totalAmount += price;
-        itemPrice.textContent = `₹${price}`;
-
-        row.appendChild(itemName);
-        row.appendChild(itemQty);
-        row.appendChild(itemPrice);
-        tbody.appendChild(row);
-    });
-
-    // Add total amount row
-    const totalRow = document.createElement("tr");
-
-    const totalLabel = document.createElement("td");
-    totalLabel.textContent = "Total";
-
-    const emptyCell = document.createElement("td");
-
-    const totalPrice = document.createElement("td");
-    totalPrice.textContent = `₹${totalAmount}`;
-
-    totalRow.appendChild(totalLabel);
-    totalRow.appendChild(emptyCell);
-    totalRow.appendChild(totalPrice);
-    tbody.appendChild(totalRow);
-}
-
-// Voice Recognition Setup
-function startVoiceRecognition() {
-    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-        alert("Speech recognition is not supported in this browser.");
+    // Check if user finalizes the order
+    if (transcript.includes("finalize") || transcript.includes("enough")) {
+        finalizeOrder();
         return;
     }
 
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.start();
-
-    recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript.toLowerCase();
-        processVoiceInput(transcript);
-    };
-
-    recognition.onerror = (event) => {
-        console.error("Error occurred in recognition: " + event.error);
-    };
-}
-
-function processVoiceInput(input) {
-    const itemList = [
-        "cappuccino", "flat white", "espresso", "filter coffee", 
-        "cold coffee", "cold mocha", "belgian chocolate", "chocolate shake", 
-        "sandwich", "garlic bread", "veg burger", "veg pizza",
-        "cheescake", "vanilla scoop", "strawberry cake", "red velvet cake"
-    ];
-
-    const lowerCaseInput = input.toLowerCase();
-    const matchedItem = itemList.find(item => lowerCaseInput.includes(item));
-
     if (matchedItem) {
-        addToOrder(matchedItem.charAt(0).toUpperCase() + matchedItem.slice(1)); // Capitalize first letter
-        addBotMessage(`${matchedItem.charAt(0).toUpperCase() + matchedItem.slice(1)} added. Anything else?`);
+        addToOrder(matchedItem, quantity, items[matchedItem]);
+        updateChat('app', `Added ${quantity} ${matchedItem} to your order.`);
     } else {
-        addBotMessage("Sorry, I couldn't find that item.");
+        updateChat('app', "Sorry, item not found.");
     }
 }
 
-function addBotMessage(message) {
-    const chat = document.querySelector(".chat");
-    const botMessageDiv = document.createElement("div");
-    botMessageDiv.classList.add("bot-message");
-
-    const botMessageText = document.createElement("p");
-    botMessageText.innerHTML = message;
-    botMessageDiv.appendChild(botMessageText);
-    
-    chat.appendChild(botMessageDiv);
-
-    // Scroll to the bottom of chatbox
-    chat.scrollTop = chat.scrollHeight;
+function addToOrder(itemName, quantity, price) {
+    const orderItem = document.createElement('tr');
+    orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
+    document.getElementById('order-items').appendChild(orderItem);
 }
+
+function finalizeOrder() {
+    const orderItems = [];
+    document.querySelectorAll('#order-items tr').forEach(row => {
+        const item = row.querySelector('td:first-child').innerText;
+        const quantity = row.querySelector('td:nth-child(2)').innerText;
+        orderItems.push({ item_name: item, quantity: parseInt(quantity) });
+    });
+
+    // Corrected URL for the Flask backend
+    fetch('http://127.0.0.1:5000/place_order', {  // Flask app running on port 5000
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ table_number: 1, items: orderItems })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Network response was not ok " + response.statusText); // Improved error handling
+        }
+        return response.json(); // Return JSON data
+    })
+    .then(data => {
+        updateChat('app', "Your order has been placed successfully!");
+        console.log(data);
+    })
+    .catch(error => {
+        updateChat('app', "Sorry, there was an issue placing your order.");
+        console.error(error);
+    });
+}
+

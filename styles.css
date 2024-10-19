@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #000000;
+    background-color: #000000; /* Keep your existing background color */
     font-size: 16px;
 }
 
@@ -18,13 +18,17 @@ body {
 header {
     text-align: center;
     margin-bottom: 10px;
-    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+     /* Added background color from second snippet */
+    color: white; /* Keep text color white */
+    padding: 10px; /* Added padding for header */
 }
 
 h1 {
     margin: auto;
     font-size: 2.5rem;
-    color: #025233;
+    color: #f7d707;
+    font-family: 'Mr Dafoe', cursive; /* Use the desired font */
 }
 
 main {
@@ -53,7 +57,7 @@ h2 {
 }
 
 .item {
-    width: calc(25% - 20px); /* Responsive width with space between items */
+    width: calc(25% - 20px);
     margin: 10px;
     text-align: center;
     cursor: pointer;
@@ -93,7 +97,6 @@ label {
     margin: 10px 0 5px;
 }
 
-
 input, textarea {
     padding: 10px;
     font-size: 1rem;
@@ -119,23 +122,91 @@ button:hover {
     background-color: #5d4037;
 }
 
-h3{
+h3 {
     color: #000000;
     font-size: 30px;
 }
 
 /* Voice Assistant Button */
-
-
 .mr-dafoe-regular {
     font-family: "Mr Dafoe", cursive;
     font-weight: 400;
     font-style: normal;
-  }
-  
+}
 
+/* Chatbox styles */
+.chatbox {
+    border: 1px solid #ddd; /* Added border */
+    padding: 10px;
+    background-color: #f9f9f9; /* Light background */
+    max-height: 600px; /* Increase max height */
+    overflow-y: auto; /* Allow scrolling */
+    border-radius: 10px; /* Added rounded corners */
+}
 
-/* Responsive Design for smaller screens */
+.chat {
+    max-height: 300px; /* Increased height */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column; /* Stack messages vertically */
+    margin-bottom: 10px;
+}
+
+.chat div.user {
+    align-self: flex-end;
+    background-color: #dfefff; /* Light blue background */
+    text-align: right;
+    max-width: fit-content; /* Rounded corners */
+}
+
+.chat div.app {
+    align-self: flex-start;
+    background-color: #ffe4e1; /* Light pink background */
+    text-align: left;
+    max-width: fit-content; /* Rounded corners */
+}
+
+.chat div {
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;  /* Chat bubbles will not be more than 80% of the width */
+    word-wrap: break-word; /* Wrap long words */
+    font-size: 16px;
+    display: inline-block;
+}
+
+.chat-input {
+    width: 80%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    display: flex; /* Flexbox for alignment */
+    justify-content: flex-end; /* Align content to the right */
+    align-items: center; /* Center content vertically */
+}
+
+.chat-input button {
+    background-color: #ffde59; /* Mic button color */
+    border: none;
+    padding: 0; /* Remove padding for better centering */
+    border-radius: 50%; /* Circular button */
+    margin: 10px;
+    width: 50px; /* Set button width */
+    height: 50px; /* Set button height */
+    display: flex; /* Flexbox to center the image */
+    justify-content: center; /* Center image horizontally */
+    align-items: center; /* Center image vertically */
+    cursor: pointer; /* Pointer cursor */
+}
+
+.chat-input button img {
+    width: 40px; /* Adjust image size */
+    height: 55px; /* Adjust image size */
+    border-radius: 50%; /* Ensure image stays round if needed */
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
     .menu, .checkout {
         flex-basis: 100%;
@@ -164,13 +235,14 @@ h3{
         font-size: 0.9rem;
     }
 }
+
 /* Import the font from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Mr+Dafoe&display=swap');
 
 /* Apply the font to the header */
 header h1 {
     font-family: 'Mr Dafoe', cursive;
-    font-size: 100px;
+    font-size: 100px; /* Keep the original header size */
 }
 
 .order-section {
@@ -178,7 +250,7 @@ header h1 {
     background-color: #ffdb29;
     padding: 20px;
     border-radius: 10px;
-    position: absolute; /* Fixed the position */
+    position: absolute; /* Fixed position */
     right: 60px; /* Stick to the right of the screen */
     top: 230px; /* Align with the top of the first row of items */
 }
@@ -200,79 +272,3 @@ header h1 {
     padding: 10px;
     border-bottom: 1px solid #444;
 }
-
-/* Chatbox container */
-/* Chatbox container */
-.chat {
-    height: 300px; /* Increased height to double the original (was 150px) */
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column; /* Stack messages vertically */
-}
-
-/* Bot message (aligned left) */
-.bot-message {
-    background-color: #f3eb63;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 10px;
-    max-width: 70%; /* Set a max width to control sentence length */
-    align-self: flex-start; /* Align to the left */
-    word-wrap: break-word; /* Ensure long words break and don't overflow */
-}
-
-/* User message (aligned right) */
-.user-message {
-    background-color: #c2bbbb;
-    color: black;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 10px;
-    max-width: 70%; /* Set a max width to control sentence length */
-    align-self: flex-end; /* Align to the right */
-    word-wrap: break-word; /* Ensure long words break and don't overflow */
-}
-
-/* Additional chatbox styles */
-.chatbox {
-    margin-top: 20px;
-    background-color: #ffffff;
-    border-radius: 10px;
-    padding: 10px;
-    max-height: 600px; /* Doubled the max height (was 300px) */
-    overflow-y: auto; /* Allow scrolling if messages exceed height */
-}
-
-
-
-.chat-input {
-    width: 80%;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    display: flex; /* Flexbox to manage alignment */
-    justify-content: flex-end; /* Align content to the right */
-    align-items: center; /* Center content vertically */
-}
-
-.chat-input button {
-    background-color: #ffde59;
-    border: none;
-    padding: 0; /* Remove padding for better centering */
-    border-radius: 50%; /* Circular button */
-    margin: 10px;
-    width: 50px; /* Set button width */
-    height: 50px; /* Set button height */
-    display: flex; /* Flexbox to center the image */
-    justify-content: center; /* Center image horizontally */
-    align-items: center; /* Center image vertically */
-    cursor: pointer; /* Add a pointer cursor for interactivity */
-}
-
-.chat-input button img {
-    width: 40px; /* Adjust image size */
-    height: 55px;
-    border-radius: 50%; /* Ensure image stays round if needed */
-}
- 
-
