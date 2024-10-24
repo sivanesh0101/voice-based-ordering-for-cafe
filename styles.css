@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #000000; /* Keep your existing background color */
+    background-color: #ffffff; /* Keep your existing background color */
     font-size: 16px;
 }
 
@@ -18,16 +18,17 @@ body {
 header {
     text-align: center;
     margin-bottom: 10px;
+    font-size: 25px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
      /* Added background color from second snippet */
     color: white; /* Keep text color white */
     padding: 10px; /* Added padding for header */
 }
 
-h1 {
+header h1 {
     margin: auto;
-    font-size: 2.5rem;
-    color: #f7d707;
+    font-size: 70px !important;
+    color: #4d2e1c;
     font-family: 'Mr Dafoe', cursive; /* Use the desired font */
 }
 
@@ -45,7 +46,7 @@ main {
 
 h2 {
     font-size: 1.8rem;
-    color: #f2e5e5;
+    color: #4a3b3b;
     margin-bottom: 10px;
 }
 
@@ -187,23 +188,36 @@ h3 {
 }
 
 .chat-input button {
-    background-color: #ffde59; /* Mic button color */
+    background-color: #f4d661; /* Normal mic button color */
     border: none;
-    padding: 0; /* Remove padding for better centering */
     border-radius: 50%; /* Circular button */
-    margin: 10px;
-    width: 50px; /* Set button width */
-    height: 50px; /* Set button height */
+    width: 60px; /* Set button width */
+    height: 60px; /* Set button height */
+    position: fixed; /* Fix position on the page */
+    bottom: 20px; /* Distance from the bottom */
+    right: 20px; /* Distance from the right */
     display: flex; /* Flexbox to center the image */
     justify-content: center; /* Center image horizontally */
     align-items: center; /* Center image vertically */
     cursor: pointer; /* Pointer cursor */
+    z-index: 1000; /* Ensure it's on top of other content */
 }
 
 .chat-input button img {
-    width: 40px; /* Adjust image size */
-    height: 55px; /* Adjust image size */
-    border-radius: 50%; /* Ensure image stays round if needed */
+    width: 45px; /* Adjust image size */
+    height: 50px; /* Adjust image size */
+}
+
+.chat-input button.active {
+    background-color: #705711; /* Darker color when active */
+}
+
+.chat-input button.active img {
+    filter: brightness(1.2); /* Slightly brighten the mic icon on hover */
+}
+
+.chat-input button img:hover {
+    filter: brightness(1.2); /* Slightly brighten the mic icon on hover */
 }
 
 /* Responsive Design */
@@ -246,14 +260,12 @@ header h1 {
 }
 
 .order-section {
-    width: 22%; /* Adjusted to take up less space */
-    background-color: #ffdb29;
-    padding: 20px;
+    background-color: #d3d3d3;
+    padding: 15px;
     border-radius: 10px;
-    position: absolute; /* Fixed position */
-    right: 60px; /* Stick to the right of the screen */
-    top: 230px; /* Align with the top of the first row of items */
+    width: 300px;
 }
+
 
 .order-section h2 {
     font-family: 'Mr Dafoe', cursive;
