@@ -1,48 +1,87 @@
 // Select the mic button element
 const micButton = document.getElementById('activate-voice-assistant');
+const voices = [];
+
+// Define the numberMap variable
+const numberMap = {
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10
+};
+
+// Load available voices
+window.speechSynthesis.onvoiceschanged = function() {
+    voices.length = 0; // Clear existing voices
+    voices.push(...window.speechSynthesis.getVoices()); // Load available voices
+};
+
+// Function to convert text to speech
+function speakText(text, rate = 1.5) {  // Default rate set to 1
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-IN'; // Use Indian English
+    utterance.rate = rate; // Set the speech rate
+
+    // Look for Microsoft Zira voice
+    const ziraVoice = voices.find(voice => voice.name.toLowerCase().includes("zira"));
+    if (ziraVoice) {
+        utterance.voice = ziraVoice; // Set Zira as the voice
+    }
+
+    // Speak the text
+    window.speechSynthesis.speak(utterance);
+}
 
 // Function to start voice recognition
 function startVoiceRecognition() {
-    // Add 'active' class to mic button to change its color
-    micButton.classList.add('active');
+    micButton.classList.add('active'); // Add 'active' class to mic button to change its color
 
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-IN';  // Set language to English (India)
-    recognition.interimResults = true;
+    recognition.interimResults = false;
+    recognition.continuous = false;  // Stop continuous recognition to reduce noise pickup
 
     // When voice recognition produces a result
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript.toLowerCase();
         processOrder(transcript);
-
-        // Remove 'active' class after voice recognition finishes
-        micButton.classList.remove('active');
+        micButton.classList.remove('active'); // Remove 'active' class after voice recognition finishes
     };
 
     // Handle errors (e.g., if user cancels voice recognition)
     recognition.onerror = function(event) {
         console.error('Voice recognition error:', event.error);
-        // Remove 'active' class if there is an error
-        micButton.classList.remove('active');
+        micButton.classList.remove('active'); // Remove 'active' class if there is an error
     };
 
     recognition.onend = function() {
-        // Remove 'active' class when voice recognition ends
-        micButton.classList.remove('active');
+        micButton.classList.remove('active'); // Remove 'active' class when voice recognition ends
     };
 
-    // Start the speech recognition process
+    // Start the speech recognition process 
     recognition.start();
 }
 
-
+// Update chat with messages
 function updateChat(sender, message) {
     const chatMessage = document.createElement('div');
     chatMessage.classList.add(sender);
     chatMessage.innerText = message;
     document.getElementById('chat').appendChild(chatMessage);
+
+    // Speak the message out loud only if it's from the app, not the user
+    if (sender !== 'user') {
+        speakText(message);
+    }
 }
 
+// Process the voice command for ordering
 function processOrder(transcript) {
     const items = {
         "cappuccino": 50, 
@@ -61,11 +100,10 @@ function processOrder(transcript) {
         "cheesecake": 165,
         "vanilla scoop": 165,
         "strawberry cake": 165 
-        // Add more items as needed
     };
 
     let matchedItem = null;
-    let quantity = 1;
+    let quantity = 1; // Default to 1
 
     // Print user's voice input
     updateChat('user', transcript);
@@ -78,32 +116,43 @@ function processOrder(transcript) {
         }
     }
 
-    // Check for quantity in transcript (optional)
-    const qtyMatch = transcript.match(/\d+/);
+    // Check for quantity in transcript (supports both numeric and word-based quantities)
+    const qtyMatch = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/i);
     if (qtyMatch) {
-        quantity = parseInt(qtyMatch[0]);
+        const quantityStr = qtyMatch[0].toLowerCase();
+        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr); // Convert to number
     }
 
     // Check if user finalizes the order
-    if (transcript.includes("finalize") || transcript.includes("enough")) {
+    if (transcript.includes("finalize") || 
+        transcript.includes("final") || 
+        transcript.includes("enough") || 
+        transcript.includes("that's all") || 
+        transcript.includes("finish the order") || 
+        transcript.includes("confirm the order") || 
+        transcript.includes("wrap it up") || 
+        transcript.includes("that's it")) {
         finalizeOrder();
         return;
     }
 
     if (matchedItem) {
         addToOrder(matchedItem, quantity, items[matchedItem]);
-        updateChat('app', `Added ${quantity} ${matchedItem} to your order.`);
+        updateChat('app', `${quantity} ${matchedItem}${quantity > 1 ? 's' : ''} added to your order.`);
+        updateChat('app', `Anything else?`);
     } else {
         updateChat('app', "Sorry, item not found.");
     }
 }
 
+// Add item to order display
 function addToOrder(itemName, quantity, price) {
     const orderItem = document.createElement('tr');
     orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
     document.getElementById('order-items').appendChild(orderItem);
 }
 
+// Finalize the order and send to the server
 function finalizeOrder() {
     const orderItems = [];
     let totalAmount = 0;
@@ -111,12 +160,11 @@ function finalizeOrder() {
     document.querySelectorAll('#order-items tr').forEach(row => {
         const item = row.querySelector('td:first-child').innerText;
         const quantity = row.querySelector('td:nth-child(2)').innerText;
-        const price = parseInt(row.querySelector('td:nth-child(3)').innerText); // Adjust to get the price directly
+        const price = parseInt(row.querySelector('td:nth-child(3)').innerText);
         orderItems.push({ item_name: item, quantity: parseInt(quantity) });
         totalAmount += price; // Sum up the total amount
     });
 
-    // Corrected URL for the Flask backend
     fetch('http://127.0.0.1:5000/place_order', {
         method: 'POST',
         headers: { 
@@ -134,39 +182,23 @@ function finalizeOrder() {
         updateChat('app', "Your order has been placed successfully!");
         console.log(data);
         
-        // Display total amount and generate QR code
-        displayTotalAndQRCode(totalAmount);
+        // Display total amount (without QR code generation)
+        displayTotalAmount(totalAmount);
     })
     .catch(error => {
-        updateChat('app', "Sorry, there was an issue placing your order.");
+        // Handle any network errors (but not QR generation errors)
+        updateChat('app', "Sorry, there was an issue with your order.");
         console.error(error);
     });
 }
 
-function displayTotalAndQRCode(total) {
-    // Display the total amount
+// Display total amount without generating QR code
+function displayTotalAmount(total) {
     const totalMessage = document.createElement('div');
     totalMessage.classList.add('app');
     totalMessage.innerText = `Total Amount: ₹${total}`;
     document.getElementById('chat').appendChild(totalMessage);
 
-    // Create a container for the QR code if it doesn't already exist
-    let qrCodeContainer = document.getElementById('qr-code');
-    if (!qrCodeContainer) {
-        qrCodeContainer = document.createElement('div');
-        qrCodeContainer.id = 'qr-code';
-        document.getElementById('chat').appendChild(qrCodeContainer);
-    } else {
-        qrCodeContainer.innerHTML = ''; // Clear any previous QR code
-    }
-
-    // Create the QR code
-    new QRCode(qrCodeContainer, {
-        text: `Pay ₹${total} at table 1`, // Customize the payment link as needed
-        width: 128,
-        height: 128,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    // Speak the total amount
+    speakText(`Your total amount is ₹${total}`);
 }
