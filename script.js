@@ -23,7 +23,7 @@ window.speechSynthesis.onvoiceschanged = function() {
 };
 
 // Function to convert text to speech
-function speakText(text, rate = 1.5) {  // Default rate set to 1
+function speakText(text, rate = 1.2) {  // Default rate set to 1
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-IN'; // Use Indian English
     utterance.rate = rate; // Set the speech rate
@@ -146,11 +146,29 @@ function processOrder(transcript) {
 }
 
 // Add item to order display
+// Add item to order display with quantity and price updates
 function addToOrder(itemName, quantity, price) {
-    const orderItem = document.createElement('tr');
-    orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
-    document.getElementById('order-items').appendChild(orderItem);
+    const orderItems = document.getElementById('order-items');
+    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText === itemName);
+
+    if (existingRow) {
+        // Item exists: update the quantity and total price
+        const quantityCell = existingRow.cells[1];
+        const priceCell = existingRow.cells[2];
+
+        const currentQty = parseInt(quantityCell.innerText);
+        const newQty = currentQty + quantity;
+
+        quantityCell.innerText = newQty;
+        priceCell.innerText = newQty * price;
+    } else {
+        // Item doesn't exist: create a new row
+        const orderItem = document.createElement('tr');
+        orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
+        orderItems.appendChild(orderItem);
+    }
 }
+
 
 // Finalize the order and send to the server
 function finalizeOrder() {
@@ -201,4 +219,24 @@ function displayTotalAmount(total) {
 
     // Speak the total amount
     speakText(`Your total amount is ₹${total}`);
+    generateQRCode(total);
+}
+function generateQRCode(total) {
+    const upiID = "9025370065@ybl";  // Replace with your UPI ID
+    const payeeName = "Sivanesh";  // Replace with the payee name
+    const upiLink = `upi://pay?pa=${upiID}&pn=${payeeName}&mc=1234&tid=transactionId&am=${total}&cu=INR&url=https://your-merchant-website.com`; // Transaction details
+
+    // Clear previous QR code
+    const qrContainer = document.getElementById("qrCodeContainer");
+    qrContainer.innerHTML = ""; // Clear previous QR code, if any
+
+    // Create a canvas element for the QR code
+    const canvas = document.createElement("canvas");
+    qrContainer.appendChild(canvas);
+
+    // Generate new QR code on the canvas
+    QRCode.toCanvas(canvas, upiLink, function (error) {
+        if (error) console.error(error);
+        console.log("QR Code generated!");
+    });
 }

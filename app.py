@@ -15,7 +15,7 @@ db = mysql.connector.connect(
     user="root",
     password="",
     database="cafeteria",
-    port="4306"
+    port="3306"
 )
 cursor = db.cursor()
 
@@ -111,4 +111,4 @@ def get_order_details(order_id, table_number):
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000, allow_unsafe_werkzeug=True)
+    app.run(host="0.0.0.0", port=5000)

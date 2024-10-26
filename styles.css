@@ -6,6 +6,16 @@ body {
     font-size: 16px;
 }
 
+.topbar {
+    position: fixed;              
+    top: 0;                     
+    left: 0;                    
+    width: 100%;                
+    background-color: rgb(218, 153, 121);               
+    padding: 11px;              
+    z-index: 1000;              
+}
+
 .container {
     width: 90%;
     max-width: 1200px;
@@ -17,17 +27,11 @@ body {
 
 header {
     text-align: center;
-    margin-bottom: 10px;
-    font-size: 25px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-     /* Added background color from second snippet */
-    color: white; /* Keep text color white */
-    padding: 10px; /* Added padding for header */
 }
 
 header h1 {
     margin: auto;
-    font-size: 70px !important;
+    font-size: 45px !important;
     color: #4d2e1c;
     font-family: 'Mr Dafoe', cursive; /* Use the desired font */
 }
@@ -41,7 +45,8 @@ main {
 
 .menu {
     flex-basis: 65%;
-    max-width: 65%;
+    max-width: 80%;
+    margin-top: 50px; /* Adjust this value based on the height of your .topbar */
 }
 
 h2 {
@@ -143,7 +148,16 @@ h3 {
     max-height: 600px; /* Increase max height */
     overflow-y: auto; /* Allow scrolling */
     border-radius: 10px; /* Added rounded corners */
+    
 }
+.qrCodeContainer {
+    display: flex;                /* Enable flexbox */
+    justify-content: center;      /* Center horizontally */
+    align-items: center;          /* Center vertically */            /* Space above the container */
+    padding: 10px;               /* Space inside the container */
+    border-radius: 8px;          /* Rounded corners */
+}
+
 
 .chat {
     max-height: 300px; /* Increased height */
@@ -194,8 +208,8 @@ h3 {
     width: 60px; /* Set button width */
     height: 60px; /* Set button height */
     position: fixed; /* Fix position on the page */
-    bottom: 20px; /* Distance from the bottom */
-    right: 20px; /* Distance from the right */
+    bottom: 30px; /* Distance from the bottom */
+    right: 30px; /* Distance from the right */
     display: flex; /* Flexbox to center the image */
     justify-content: center; /* Center image horizontally */
     align-items: center; /* Center image vertically */
@@ -263,7 +277,9 @@ header h1 {
     background-color: #d3d3d3;
     padding: 15px;
     border-radius: 10px;
-    width: 300px;
+    margin-top: 80px;
+    width: 350px;
+    right: 20px; 
 }
 
 

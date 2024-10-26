@@ -17,13 +17,16 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 </head>
 <body>
-    <div class="container">
+    <div class="topbar">
         <header>
             <h1>Cafeteria</h1>
         </header>
+    </div>    
+        <div class="container">
         <main>
             <section class="menu">
                 <h2>Hot Coffee</h2>
@@ -139,7 +142,9 @@
                         </tbody>
                     </table>
                 </div>
-                
+                <div class="qrCodeContainer" id="qrCodeContainer">
+                    
+                </div>
                 <div class="chatbox">
                     <div class="chat" id="chat">
                         <!-- Chat messages will be dynamically added here -->
