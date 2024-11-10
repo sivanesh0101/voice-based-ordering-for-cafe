@@ -34,6 +34,10 @@ function speakText(text, rate = 1.2) {  // Default rate set to 1
         utterance.voice = ziraVoice; // Set Zira as the voice
     }
 
+    utterance.onend = function(){
+        if (callback) callback();
+    };
+
     // Speak the text
     window.speechSynthesis.speak(utterance);
 }
@@ -79,10 +83,24 @@ function updateChat(sender, message) {
     if (sender !== 'user') {
         speakText(message);
     }
+    else{
+        startVoiceRecognition();
+    }
 }
 
 // Process the voice command for ordering
+// Process the voice command for ordering
 function processOrder(transcript) {
+    // Print user's voice input
+    updateChat('user', transcript);
+
+    // Check for greetings
+    const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
+    if (greetings.some(greet => transcript.includes(greet))) {
+        updateChat('app', "Hello, I am here to assist you. Please order something.");
+        return; // Exit the function after greeting response
+    }
+
     const items = {
         "cappuccino": 50, 
         "espresso": 60, 
@@ -104,9 +122,6 @@ function processOrder(transcript) {
 
     let matchedItem = null;
     let quantity = 1; // Default to 1
-
-    // Print user's voice input
-    updateChat('user', transcript);
 
     // Check if the transcript contains an item
     for (const item in items) {
@@ -144,6 +159,7 @@ function processOrder(transcript) {
         updateChat('app', "Sorry, item not found.");
     }
 }
+
 
 // Add item to order display
 // Add item to order display with quantity and price updates

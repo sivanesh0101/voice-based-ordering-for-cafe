@@ -8,15 +8,14 @@ app = Flask(__name__)
 CORS(app)
 
 socketio = SocketIO(app)
-
-# Database connection
 db = mysql.connector.connect(
     host="localhost",
+    port=3306,
     user="root",
     password="",
     database="cafeteria",
-    port="3306"
 )
+
 cursor = db.cursor()
 
 @app.route('/')
@@ -58,7 +57,7 @@ def place_order():
             if item_info:
                 item_id, price = item_info
                 quantity = item['quantity']
-                cursor.execute("INSERT INTO OrderItems (OrderID, ItemID, Quantity) VALUES (%s, %s, %s)", 
+                cursor.execute("INSERT INTO OrderItems (OrderID, ItemID, Quantity) VALUES (%s, %s, %s)",
                                (order_id, item_id, quantity))
                 total_amount += price * quantity
             else:
@@ -74,41 +73,99 @@ def place_order():
         return jsonify({"error": str(e)}), 500
 
 # New route to fetch order details by order ID and table number
-@app.route('/order_details/<int:order_id>/<int:table_number>', methods=['GET'])
-def get_order_details(order_id, table_number):
+
+@app.route('/all_orders', methods=['GET'])
+def get_all_orders():
     try:
         cursor.execute("""
             SELECT o.OrderID, o.TableNumber, o.OrderDate, oi.ItemID, i.ItemName, oi.Quantity, i.Price 
             FROM Orders o 
             JOIN OrderItems oi ON o.OrderID = oi.OrderID 
             JOIN Items i ON oi.ItemID = i.ItemID 
-            WHERE o.OrderID = %s AND o.TableNumber = %s
-        """, (order_id, table_number))
+            ORDER BY o.OrderDate DESC
+        """)
         
-        order_details = cursor.fetchall()
+        orders = cursor.fetchall()
+        order_dict = {}
 
-        if not order_details:
-            return jsonify({"error": "Order not found"}), 404
-        
-        response = {
-            "order_id": order_id,
-            "table_number": table_number,
-            "items": [
-                {
-                    "item_name": item[4],
-                    "quantity": item[5],
-                    "price": item[6],
-                    "total": item[5] * item[6]
-                } for item in order_details
-            ],
-            "total_amount": sum(item[5] * item[6] for item in order_details),
-            "order_date": order_details[0][2].strftime("%Y-%m-%d %H:%M:%S")
-        }
+        # Organize the data by OrderID
+        for order in orders:
+            order_id, table_number, order_date, item_id, item_name, quantity, price = order
+            if order_id not in order_dict:
+                order_dict[order_id] = {
+                    "order_id": order_id,
+                    "table_number": table_number,
+                    "order_date": order_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "items": [],
+                    "total_amount": 0
+                }
+            order_dict[order_id]["items"].append({
+                "item_name": item_name,
+                "quantity": quantity,
+                "price": price,
+                "total": quantity * price
+            })
+            order_dict[order_id]["total_amount"] += quantity * price
 
-        return jsonify(response)
+        return jsonify(list(order_dict.values()))
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/orders/<status>', methods=['GET'])
+def get_orders_by_status(status):
+    try:
+        cursor.execute("""
+            SELECT o.OrderID, o.TableNumber, o.OrderDate, oi.ItemID, i.ItemName, oi.Quantity, i.Price 
+            FROM Orders o 
+            JOIN OrderItems oi ON o.OrderID = oi.OrderID 
+            JOIN Items i ON oi.ItemID = i.ItemID 
+            WHERE o.status = %s
+            ORDER BY o.OrderDate DESC
+        """, (status,))
+
+        orders = cursor.fetchall()
+        order_dict = {}
+
+        for order in orders:
+            order_id, table_number, order_date, item_id, item_name, quantity, price = order
+            if order_id not in order_dict:
+                order_dict[order_id] = {
+                    "order_id": order_id,
+                    "table_number": table_number,
+                    "order_date": order_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    "items": [],
+                    "total_amount": 0
+                }
+            order_dict[order_id]["items"].append({
+                "item_name": item_name,
+                "quantity": quantity,
+                "price": price,
+                "total": quantity * price
+            })
+            order_dict[order_id]["total_amount"] += quantity * price
+
+        return jsonify(list(order_dict.values()))
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/update_order_status', methods=['POST'])
+def update_order_status():
+    data = request.json
+    order_id = data.get('order_id')
+    new_status = data.get('new_status')
+
+    try:
+        cursor.execute("UPDATE Orders SET status = %s WHERE OrderID = %s", (new_status, order_id))
+        db.commit()
+        return jsonify({"message": "Order status updated successfully."})
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+    
+    
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

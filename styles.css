@@ -50,6 +50,7 @@ main {
 }
 
 h2 {
+    font-style: italic;
     font-size: 1.8rem;
     color: #4a3b3b;
     margin-bottom: 10px;
@@ -222,9 +223,12 @@ h3 {
     height: 50px; /* Adjust image size */
 }
 
-.chat-input button.active {
-    background-color: #705711; /* Darker color when active */
+.chat-input button.active,
+.chat-input button:hover {
+    background-color: #705711;
+    filter: brightness(1.2); /* Apply brightness once */
 }
+
 
 .chat-input button.active img {
     filter: brightness(1.2); /* Slightly brighten the mic icon on hover */
