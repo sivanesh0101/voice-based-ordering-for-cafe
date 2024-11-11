@@ -2,6 +2,7 @@
 const micButton = document.getElementById('activate-voice-assistant');
 const voices = [];
 
+
 // Define the numberMap variable
 const numberMap = {
     "one": 1,
@@ -92,14 +93,26 @@ function updateChat(sender, message) {
 // Process the voice command for ordering
 function processOrder(transcript) {
     // Print user's voice input
-    updateChat('user', transcript);
+     updateChat('user', transcript);
 
-    // Check for greetings
+    // Check for greetings (existing code)
     const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
     if (greetings.some(greet => transcript.includes(greet))) {
         updateChat('app', "Hello, I am here to assist you. Please order something.");
         return; // Exit the function after greeting response
     }
+
+    // Check for "remove" command
+    if (transcript.includes("remove") || transcript.includes("take out") || transcript.includes("cancel")) {
+        const itemToRemove = Object.keys(items).find(item => transcript.includes(item));
+        if (itemToRemove) {
+            removeItem(itemToRemove);
+        } else {
+            updateChat('app', "Sorry, I couldn't find that item in your order.");
+        }
+        return;
+    }
+
 
     const items = {
         "cappuccino": 50, 

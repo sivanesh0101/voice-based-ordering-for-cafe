@@ -17,12 +17,13 @@ body {
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 10px auto;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: space-between; /* Align items horizontally */
+    width: 100%;
+    max-width: 1200px; /* Optional max-width for layout */
+    margin: 0 auto; /* Center the container */
+    padding: 20px;
+    margin-top: 60px; /* Adjust based on topbar height */
 }
 
 header {
@@ -44,9 +45,11 @@ main {
 }
 
 .menu {
-    flex-basis: 65%;
-    max-width: 80%;
-    margin-top: 50px; /* Adjust this value based on the height of your .topbar */
+    flex: 1;
+    max-width: 70%; /* Set max width for responsive layout */
+    margin-right: 20px; /* Space between menu and order section */
+    max-height: calc(100vh - 120px); /* Adjust to fit within viewport */
+    overflow-y: auto;
 }
 
 h2 {
@@ -278,12 +281,15 @@ header h1 {
 }
 
 .order-section {
+    width: 30%; /* Fixed width or percentage width to fit next to .menu */
     background-color: #d3d3d3;
     padding: 15px;
     border-radius: 10px;
-    margin-top: 80px;
-    width: 350px;
-    right: 20px; 
+    max-height: calc(100vh - 120px); /* Limit the height to fit within viewport */
+    overflow-y: auto; /* Enable vertical scrolling */
+    position: sticky; /* Stick within the viewport while scrolling */
+    top: 80px; /* Adjust top position as needed */
+    
 }
 
 
@@ -303,4 +309,30 @@ header h1 {
 .order-summary th, .order-summary td {
     padding: 10px;
     border-bottom: 1px solid #444;
+}
+.order-section::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+.order-section::-webkit-scrollbar-track {
+    background: #f0f0f0; /* Color of the scrollbar track */
+    border-radius: 10px; /* Optional: rounded edges */
+}
+.order-section::-webkit-scrollbar-thumb {
+    background-color: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded edges for a smoother look */
+    border: 2px solid #f0f0f0; /* Optional: adds space around the thumb */
+}
+
+
+.menu::-webkit-scrollbar {
+    width: 8px; /* Width of the scrollbar */
+}
+.menu::-webkit-scrollbar-track {
+    background: #f0f0f0; /* Color of the scrollbar track */
+    border-radius: 10px; /* Optional: rounded edges */
+}
+.menu::-webkit-scrollbar-thumb {
+    background-color: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Rounded edges for a smoother look */
+    border: 2px solid #f0f0f0; /* Optional: adds space around the thumb */
 }

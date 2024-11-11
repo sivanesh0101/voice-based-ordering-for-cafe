@@ -12,6 +12,7 @@ async function loadOrders(status) {
 function displayOrders(orders, status) {
     const detailsDiv = document.getElementById('order-details');
     detailsDiv.innerHTML = ""; // Clear previous content
+    orders.sort((a, b) => new Date(a.order_date) - new Date(b.order_date));
 
     orders.forEach(order => {
         const orderDiv = document.createElement('div');
