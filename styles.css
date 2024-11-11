@@ -11,7 +11,7 @@ body {
     top: 0;                     
     left: 0;                    
     width: 100%;                
-    background-color: rgb(218, 153, 121);               
+    background-color: #da9979;               
     padding: 11px;              
     z-index: 1000;              
 }
@@ -282,7 +282,7 @@ header h1 {
 
 .order-section {
     width: 30%; /* Fixed width or percentage width to fit next to .menu */
-    background-color: #d3d3d3;
+    background-color: #f5e3e3;
     padding: 15px;
     border-radius: 10px;
     max-height: calc(100vh - 120px); /* Limit the height to fit within viewport */
@@ -318,21 +318,21 @@ header h1 {
     border-radius: 10px; /* Optional: rounded edges */
 }
 .order-section::-webkit-scrollbar-thumb {
-    background-color: #888; /* Color of the scrollbar thumb */
+    background-color: #da9979; /* Color of the scrollbar thumb */
     border-radius: 10px; /* Rounded edges for a smoother look */
     border: 2px solid #f0f0f0; /* Optional: adds space around the thumb */
 }
 
 
 .menu::-webkit-scrollbar {
-    width: 8px; /* Width of the scrollbar */
+    width: 7px; /* Width of the scrollbar */
 }
 .menu::-webkit-scrollbar-track {
     background: #f0f0f0; /* Color of the scrollbar track */
     border-radius: 10px; /* Optional: rounded edges */
 }
 .menu::-webkit-scrollbar-thumb {
-    background-color: #888; /* Color of the scrollbar thumb */
+    background-color: #da9979; /* Color of the scrollbar thumb */
     border-radius: 10px; /* Rounded edges for a smoother look */
     border: 2px solid #f0f0f0; /* Optional: adds space around the thumb */
 }

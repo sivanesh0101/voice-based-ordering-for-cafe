@@ -50,13 +50,12 @@ function startVoiceRecognition() {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-IN';  // Set language to English (India)
     recognition.interimResults = false;
-    recognition.continuous = false;  // Stop continuous recognition to reduce noise pickup
+    recognition.continuous = true;  // Keep recognition continuous to allow multiple commands
 
     // When voice recognition produces a result
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript.toLowerCase();
         processOrder(transcript);
-        micButton.classList.remove('active'); // Remove 'active' class after voice recognition finishes
     };
 
     // Handle errors (e.g., if user cancels voice recognition)
@@ -69,31 +68,39 @@ function startVoiceRecognition() {
         micButton.classList.remove('active'); // Remove 'active' class when voice recognition ends
     };
 
-    // Start the speech recognition process 
+    // Start the speech recognition process
     recognition.start();
 }
 
+
 // Update chat with messages
 function updateChat(sender, message) {
+    // Create the chat message element
     const chatMessage = document.createElement('div');
     chatMessage.classList.add(sender);
     chatMessage.innerText = message;
+
+    // Append the new message to the chat
     document.getElementById('chat').appendChild(chatMessage);
 
-    // Speak the message out loud only if it's from the app, not the user
+    // Speak the message if it's from the app (not the user)
     if (sender !== 'user') {
         speakText(message);
     }
-    else{
+    else {
         startVoiceRecognition();
     }
+
+    // Auto-scroll to the bottom of the chat section
+    const chatContainer = document.getElementById('chat');
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
 // Process the voice command for ordering
 // Process the voice command for ordering
 function processOrder(transcript) {
     // Print user's voice input
-     updateChat('user', transcript);
+    updateChat('user', transcript);
 
     // Check for greetings (existing code)
     const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
@@ -101,6 +108,9 @@ function processOrder(transcript) {
         updateChat('app', "Hello, I am here to assist you. Please order something.");
         return; // Exit the function after greeting response
     }
+
+    // Remove the word "order" from the transcript as it is a filler
+    transcript = transcript.replace(/\border\b/, "").trim();
 
     // Check for "remove" command
     if (transcript.includes("remove") || transcript.includes("take out") || transcript.includes("cancel")) {
@@ -112,7 +122,6 @@ function processOrder(transcript) {
         }
         return;
     }
-
 
     const items = {
         "cappuccino": 50, 
@@ -133,43 +142,60 @@ function processOrder(transcript) {
         "strawberry cake": 165 
     };
 
-    let matchedItem = null;
-    let quantity = 1; // Default to 1
+    const matchedItems = [];
+    const quantities = [];
 
-    // Check if the transcript contains an item
+    // Extract items and their quantities from the transcript
     for (const item in items) {
         if (transcript.includes(item)) {
-            matchedItem = item;
-            break;
+            matchedItems.push(item); // Collect all items mentioned in the transcript
         }
     }
 
-    // Check for quantity in transcript (supports both numeric and word-based quantities)
-    const qtyMatch = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/i);
-    if (qtyMatch) {
-        const quantityStr = qtyMatch[0].toLowerCase();
-        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr); // Convert to number
+    // Extract quantity from the transcript (supports both numeric and word-based quantities)
+    const qtyMatches = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/gi);
+    if (qtyMatches) {
+        qtyMatches.forEach(match => {
+            quantities.push(isNaN(match) ? numberMap[match.toLowerCase()] : parseInt(match));
+        });
     }
 
-    // Check if user finalizes the order
     if (transcript.includes("finalize") || 
-        transcript.includes("final") || 
-        transcript.includes("enough") || 
-        transcript.includes("that's all") || 
-        transcript.includes("finish the order") || 
-        transcript.includes("confirm the order") || 
-        transcript.includes("wrap it up") || 
-        transcript.includes("that's it")) {
-        finalizeOrder();
+    transcript.includes("final") || 
+    transcript.includes("enough") || 
+    transcript.includes("that's all") || 
+    transcript.includes("finish the order") || 
+    transcript.includes("confirm the order") || 
+    transcript.includes("wrap it up") || 
+    transcript.includes("that's it")) {
+
+        // Check if there are items in the order list before finalizing
+        if (document.querySelectorAll('#order-items tr').length === 0) {
+            updateChat('app', "Please order something before finalizing.");
+        } else {
+            finalizeOrder();
+            micButton.classList.remove('active');  // Stop mic after finalizing the order
+        }
+
         return;
     }
 
-    if (matchedItem) {
-        addToOrder(matchedItem, quantity, items[matchedItem]);
-        updateChat('app', `${quantity} ${matchedItem}${quantity > 1 ? 's' : ''} added to your order.`);
+    // Default quantity to 1 for items that don't have a specified quantity
+    matchedItems.forEach(item => {
+        const quantity = quantities.shift() || 1;  // Take quantity from the list or default to 1
+        addToOrder(item, quantity, items[item]);
+        updateChat('app', `${quantity} ${item}${quantity > 1 ? 's' : ''} added to your order.`);
+    });
+
+    if (matchedItems.length > 0) {
         updateChat('app', `Anything else?`);
     } else {
         updateChat('app', "Sorry, item not found.");
+    }
+
+    // Continue listening for more commands if the order is not finalized
+    if (document.querySelectorAll('#order-items tr').length > 0) {
+        startVoiceRecognition();  // Keep mic active if there are items in the order
     }
 }
 
@@ -195,6 +221,7 @@ function addToOrder(itemName, quantity, price) {
         const orderItem = document.createElement('tr');
         orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
         orderItems.appendChild(orderItem);
+        
     }
 }
 
@@ -250,6 +277,7 @@ function displayTotalAmount(total) {
     speakText(`Your total amount is ₹${total}`);
     generateQRCode(total);
 }
+
 function generateQRCode(total) {
     const upiID = "9025370065@ybl";  // Replace with your UPI ID
     const payeeName = "Sivanesh";  // Replace with the payee name
