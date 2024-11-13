@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        var socket = io();
-        socket.on('message', function(message) {
-            console.log(message);
-        });
-    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nosifer&display=swap');
+        </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Nosifer&display=swap');
+        </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.25, minimum-scale=0.5">
     <title>CafeteriaWebApp</title>
@@ -23,7 +22,7 @@
 <body>
     <div class="topbar">
         <header>
-            <h1>Cafeteria</h1>
+            <h1>kovai kulambi</h1>
         </header>
     </div>    
         <div class="container">
@@ -33,22 +32,22 @@
                 <div class="items">
                     <div class="item" onclick="addToOrder('Cappuccino', 1, 50)">
                         <img src="pics/cappcinno.jpg" alt="">
-                        <p>Cappuccino</p>
+                        <p class="item-name">Cappuccino</p>
                         <p class="item-price">&#8377; 50</p>
                     </div>
                     <div class="item" onclick="addToOrder('Flat White', 1, 40)">
                         <img src="pics/flat_white.jpg" alt="">
-                        <p>Flat White</p>
+                        <p class="item-name">Flat White</p>
                         <p class="item-price">&#8377; 40</p>
                     </div>
                     <div class="item" onclick="addToOrder('Espresso', 1, 60)">
                         <img src="pics/espresso-day.png" alt="">
-                        <p>Espresso</p>
+                        <p class="item-name">Espresso</p>
                         <p class="item-price">&#8377; 60</p>
                     </div>
                     <div class="item" onclick="addToOrder('Filter Coffee', 1, 70)">
                         <img src="pics/filtercoffee.webp" alt="">
-                        <p>Filter Coffee</p>
+                        <p class="item-name">Filter Coffee</p>
                         <p class="item-price">&#8377; 70</p>
                     </div>
                 </div>
@@ -57,22 +56,22 @@
                 <div class="items">
                     <div class="item" onclick="addToOrder('Cold Coffee', 1, 120)">
                         <img src="pics/Cold-Coffee.jpg" alt="">
-                        <p>Cold Coffee</p>
+                        <p class="item-name">Cold Coffee</p>
                         <p class="item-price">&#8377; 120</p>
                     </div>
                     <div class="item" onclick="addToOrder('Cold Mocha', 1, 150)">
                         <img src="pics/coldmocha.jpg" alt="">
-                        <p>Cold Mocha</p>
+                        <p class="item-name">Cold Mocha</p>
                         <p class="item-price">&#8377; 150</p>
                     </div>
                     <div class="item" onclick="addToOrder('Belgian Chocolate', 1, 180)">
                         <img src="pics/begian.jpg" alt="">
-                        <p>Belgian Chocolate</p>
+                        <p class="item-name">Belgian Chocolate</p>
                         <p class="item-price">&#8377; 180</p>
                     </div>
                     <div class="item" onclick="addToOrder('Chocolate Shake', 1, 200)">
                         <img src="pics/cholotate shakee.jpg" alt="">
-                        <p>Chocolate Shake</p>
+                        <p class="item-name">Chocolate Shake</p>
                         <p class="item-price">&#8377; 200</p>
                     </div>
                 </div>
@@ -81,22 +80,22 @@
                 <div class="items">
                     <div class="item" onclick="addToOrder('Sandwich', 1, 70)">
                         <img src="pics/sandwitch.jpg" alt="">
-                        <p>Sandwich</p>
+                        <p class="item-name">Sandwich</p>
                         <p class="item-price">&#8377; 70</p>
                     </div>
                     <div class="item" onclick="addToOrder('Garlic Bread', 1, 60)">
                         <img src="pics/garlicBread.avif" alt="">
-                        <p>Garlic Bread</p>
+                        <p class="item-name">Garlic Bread</p>
                         <p class="item-price">&#8377; 60</p>
                     </div>
                     <div class="item" onclick="addToOrder('Veg Burger', 1, 120)">
                         <img src="pics/vegBurger.jpg" alt="">
-                        <p>Veg Burger</p>
+                        <p class="item-name">Veg Burger</p>
                         <p class="item-price">&#8377; 120</p>
                     </div>
                     <div class="item" onclick="addToOrder('Veg Pizza', 1, 150)">
                         <img src="pics/vegPizza.jpg" alt="">
-                        <p>Veg Pizza</p>
+                        <p class="item-name">Veg Pizza</p>
                         <p class="item-price">&#8377; 150</p>
                     </div>
                 </div>
@@ -104,23 +103,23 @@
                 <h2>Dessert</h2>
                 <div class="items">
                     <div class="item" onclick="addToOrder('Cheescake', 1, 165)">
-                        <img src="pics/cappcinno.jpg" alt="">
-                        <p>Cheescake</p>
+                        <img src="pics/cheescake.avif" alt="">
+                        <p class="item-name">Cheescake</p>
                         <p class="item-price">&#8377; 165</p>
                     </div>
                     <div class="item" onclick="addToOrder('Vanilla Scoop', 1, 165)">
                         <img src="pics/venilaScoop.jpg" alt="">
-                        <p>Vanilla Scoop</p>
+                        <p class="item-name">Vanilla Scoop</p>
                         <p class="item-price">&#8377; 165</p>
                     </div>
                     <div class="item" onclick="addToOrder('Strawberry Cake', 1, 165)">
                         <img src="pics/STRAWBERRY-CAKE-S-01.jpg" alt="">
-                        <p>Strawberry Cake</p>
+                        <p class="item-name">Strawberry Cake</p>
                         <p class="item-price">&#8377; 165</p>
                     </div>
                     <div class="item" onclick="addToOrder('Red Velvet Cake', 1, 415)">
                         <img src="pics/redvelvet cake.webp" alt="">
-                        <p>Red Velvet Cake</p>
+                        <p class="item-name">Red Velvet Cake</p>
                         <p class="item-price">&#8377; 415</p>
                     </div>
                 </div>
@@ -158,5 +157,12 @@
             </div>
         </div>
         <script src="script.js"></script>
+        <script src="http://127.0.0.1:5000/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io();
+            socket.on('message', function(message) {
+                console.log(message);
+            });
+        </script>
     </body>
 </html>

@@ -6,6 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 socketio = SocketIO(app)
 db = mysql.connector.connect(
@@ -164,8 +165,6 @@ def update_order_status():
     except Exception as e:
         db.rollback()
         return jsonify({"error": str(e)}), 500
-    
-    
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
