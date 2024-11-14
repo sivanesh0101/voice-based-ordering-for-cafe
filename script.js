@@ -134,17 +134,24 @@ function processOrder(transcript) {
 
     // Check if user finalizes the order
     if (transcript.includes("finalize") || 
-        transcript.includes("final") || 
-        transcript.includes("enough") || 
-        transcript.includes("that's all") || 
-        transcript.includes("finish the order") || 
-        transcript.includes("confirm the order") || 
-        transcript.includes("wrap it up") || 
-        transcript.includes("that's it")) {
-        finalizeOrder();
-        return;
-    }
+    transcript.includes("final") || 
+    transcript.includes("enough") || 
+    transcript.includes("that's all") || 
+    transcript.includes("finish the order") || 
+    transcript.includes("confirm the order") || 
+    transcript.includes("wrap it up") || 
+    transcript.includes("that's it")) {
 
+        // Check if there are items in the order list before finalizing
+        if (document.querySelectorAll('#order-items tr').length === 0) {
+            updateChat('app', "Please order something before finalizing.");
+        } else {
+            finalizeOrder();
+            micButton.classList.remove('active');  // Stop mic after finalizing the order
+        }
+
+        return;
+    }  
     // Check if user wants to remove items
     if (transcript.includes("remove")) {
         const removeMatch = transcript.match(/remove (\d+|one|two|three|four|five|six|seven|eight|nine|ten)?\s*(.*)/);
@@ -176,27 +183,45 @@ function processOrder(transcript) {
         updateChat('app', "Oops, it's not available.");
     }
 }
-
+function removeItemFromOrderClick(iconElement) {
+    const row = iconElement.closest('tr');  // Ensure it targets the parent row
+    if (!row) {
+        console.error('Row not found');
+        return;
+    }
+    
+    const itemName = row.cells[0].innerText.trim();
+    const quantity = parseInt(row.cells[1].innerText.trim());
+    
+    if (itemName && quantity) {
+        removeItemFromOrder(itemName, quantity);  // Call removeItemFromOrder
+        row.remove();  // Remove the row from the table after removing the item
+    } else {
+        console.error('Invalid row data', itemName, quantity);
+    }
+}
 // Remove item from order display
 function removeItemFromOrder(itemName, quantity) {
     const orderItems = document.getElementById('order-items');
-    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText.toLowerCase() === itemName);
+    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText.toLowerCase() === itemName.toLowerCase());
 
     if (existingRow) {
         const quantityCell = existingRow.cells[1];
         const priceCell = existingRow.cells[2];
         const currentQty = parseInt(quantityCell.innerText);
 
+        // If quantity matches or exceeds, remove the item
         if (currentQty >= quantity) {
             const newQty = currentQty - quantity;
             if (newQty > 0) {
+                // Update the quantity and price
                 quantityCell.innerText = newQty;
                 priceCell.innerText = newQty * parseInt(priceCell.innerText) / currentQty;
-                updateChat('app', `${quantity} ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
             } else {
+                // Remove the row entirely if quantity reaches zero
                 existingRow.remove();
-                updateChat('app', `All ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
             }
+            updateChat('app', `${quantity} ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
         } else {
             updateChat('app', `You only have ${currentQty} ${itemName}${quantity > 1 ? 's' : ''} in your order.`);
         }
@@ -204,7 +229,6 @@ function removeItemFromOrder(itemName, quantity) {
         updateChat('app', `No ${itemName}s found in your order.`);
     }
 }
-
 // Add item to order display
 function addToOrder(itemName, quantity, price) {
     const orderItems = document.getElementById('order-items');
@@ -214,19 +238,17 @@ function addToOrder(itemName, quantity, price) {
         // Item exists: update the quantity and total price
         const quantityCell = existingRow.cells[1];
         const priceCell = existingRow.cells[2];
-
         const currentQty = parseInt(quantityCell.innerText);
         const newQty = currentQty + quantity;
-
         quantityCell.innerText = newQty;
         priceCell.innerText = newQty * price;
     } else {
         // Item doesn't exist: create a new row
         const orderItem = document.createElement('tr');
         orderItem.innerHTML = `<td>${itemName}</td>
-        <td>${quantity}</td>
-        <td>${price * quantity}</td>
-        <td><i class="fas fa-trash-alt" style="cursor: pointer;" onclick="removeItemFromOrder(this)"></i></td>`;
+            <td>${quantity}</td>
+            <td>${price * quantity}</td>
+            <td><i class="fas fa-trash-alt" style="cursor: pointer;" onclick="removeItemFromOrderClick(this)"></i></td>`;
         orderItems.appendChild(orderItem);
     }
 }
