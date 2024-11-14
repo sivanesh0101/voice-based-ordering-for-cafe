@@ -2,7 +2,6 @@
 const micButton = document.getElementById('activate-voice-assistant');
 const voices = [];
 
-
 // Define the numberMap variable
 const numberMap = {
     "one": 1,
@@ -35,10 +34,6 @@ function speakText(text, rate = 1.2) {  // Default rate set to 1
         utterance.voice = ziraVoice; // Set Zira as the voice
     }
 
-    utterance.onend = function(){
-        if (callback) callback();
-    };
-
     // Speak the text
     window.speechSynthesis.speak(utterance);
 }
@@ -50,12 +45,13 @@ function startVoiceRecognition() {
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'en-IN';  // Set language to English (India)
     recognition.interimResults = false;
-    recognition.continuous = true;  // Keep recognition continuous to allow multiple commands
+    recognition.continuous = false;  // Stop continuous recognition to reduce noise pickup
 
     // When voice recognition produces a result
     recognition.onresult = function(event) {
         const transcript = event.results[0][0].transcript.toLowerCase();
         processOrder(transcript);
+        micButton.classList.remove('active'); // Remove 'active' class after voice recognition finishes
     };
 
     // Handle errors (e.g., if user cancels voice recognition)
@@ -68,61 +64,27 @@ function startVoiceRecognition() {
         micButton.classList.remove('active'); // Remove 'active' class when voice recognition ends
     };
 
-    // Start the speech recognition process
+    // Start the speech recognition process 
     recognition.start();
 }
 
-
 // Update chat with messages
 function updateChat(sender, message) {
-    // Create the chat message element
     const chatMessage = document.createElement('div');
     chatMessage.classList.add(sender);
     chatMessage.innerText = message;
-
-    // Append the new message to the chat
     document.getElementById('chat').appendChild(chatMessage);
+    const chatContainer = document.getElementById('chat');
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // Speak the message if it's from the app (not the user)
+    // Speak the message out loud only if it's from the app, not the user
     if (sender !== 'user') {
         speakText(message);
     }
-    else {
-        startVoiceRecognition();
-    }
-
-    // Auto-scroll to the bottom of the chat section
-    const chatContainer = document.getElementById('chat');
-    chatContainer.scrollTop = chatContainer.scrollHeight;
 }
 
-// Process the voice command for ordering
-// Process the voice command for ordering
+// Process the voice command for ordering and removing items
 function processOrder(transcript) {
-    // Print user's voice input
-    updateChat('user', transcript);
-
-    // Check for greetings (existing code)
-    const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
-    if (greetings.some(greet => transcript.includes(greet))) {
-        updateChat('app', "Hello, I am here to assist you. Please order something.");
-        return; // Exit the function after greeting response
-    }
-
-    // Remove the word "order" from the transcript as it is a filler
-    transcript = transcript.replace(/\border\b/, "").trim();
-
-    // Check for "remove" command
-    if (transcript.includes("remove") || transcript.includes("take out") || transcript.includes("cancel")) {
-        const itemToRemove = Object.keys(items).find(item => transcript.includes(item));
-        if (itemToRemove) {
-            removeItem(itemToRemove);
-        } else {
-            updateChat('app', "Sorry, I couldn't find that item in your order.");
-        }
-        return;
-    }
-
     const items = {
         "cappuccino": 50, 
         "espresso": 60, 
@@ -142,66 +104,108 @@ function processOrder(transcript) {
         "strawberry cake": 165 
     };
 
-    const matchedItems = [];
-    const quantities = [];
+    let matchedItem = null;
+    let quantity = 1; // Default to 1
 
-    // Extract items and their quantities from the transcript
+    // Print user's voice input
+    updateChat('user', transcript);
+
+    // Check if the transcript contains an item for ordering
     for (const item in items) {
         if (transcript.includes(item)) {
-            matchedItems.push(item); // Collect all items mentioned in the transcript
+            matchedItem = item;
+            break;
         }
     }
 
-    // Extract quantity from the transcript (supports both numeric and word-based quantities)
-    const qtyMatches = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/gi);
-    if (qtyMatches) {
-        qtyMatches.forEach(match => {
-            quantities.push(isNaN(match) ? numberMap[match.toLowerCase()] : parseInt(match));
-        });
+    // Check for quantity in transcript (supports both numeric and word-based quantities)
+    const qtyMatch = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/i);
+    if (qtyMatch) {
+        const quantityStr = qtyMatch[0].toLowerCase();
+        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr); // Convert to number
     }
 
+    // Greetings
+    const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
+    if (greetings.some(greet => transcript.includes(greet))) {
+        updateChat('app', "Hello, Order something you like!");
+        return; // Exit the function after greeting response
+    }
+
+    // Check if user finalizes the order
     if (transcript.includes("finalize") || 
-    transcript.includes("final") || 
-    transcript.includes("enough") || 
-    transcript.includes("that's all") || 
-    transcript.includes("finish the order") || 
-    transcript.includes("confirm the order") || 
-    transcript.includes("wrap it up") || 
-    transcript.includes("that's it")) {
-
-        // Check if there are items in the order list before finalizing
-        if (document.querySelectorAll('#order-items tr').length === 0) {
-            updateChat('app', "Please order something before finalizing.");
-        } else {
-            finalizeOrder();
-            micButton.classList.remove('active');  // Stop mic after finalizing the order
-        }
-
+        transcript.includes("final") || 
+        transcript.includes("enough") || 
+        transcript.includes("that's all") || 
+        transcript.includes("finish the order") || 
+        transcript.includes("confirm the order") || 
+        transcript.includes("wrap it up") || 
+        transcript.includes("that's it")) {
+        finalizeOrder();
         return;
     }
 
-    // Default quantity to 1 for items that don't have a specified quantity
-    matchedItems.forEach(item => {
-        const quantity = quantities.shift() || 1;  // Take quantity from the list or default to 1
-        addToOrder(item, quantity, items[item]);
-        updateChat('app', `${quantity} ${item}${quantity > 1 ? 's' : ''} added to your order.`);
-    });
+    // Check if user wants to remove items
+    if (transcript.includes("remove")) {
+        const removeMatch = transcript.match(/remove (\d+|one|two|three|four|five|six|seven|eight|nine|ten)?\s*(.*)/);
+        if (removeMatch) {
+            const removeQtyStr = removeMatch[1] ? removeMatch[1].toLowerCase() : 'one';
+            const removeItem = removeMatch[2].toLowerCase();
+            const removeQuantity = isNaN(removeQtyStr) ? numberMap[removeQtyStr] : parseInt(removeQtyStr);
 
-    if (matchedItems.length > 0) {
-        updateChat('app', `Anything else?`);
-    } else {
-        updateChat('app', "Sorry, item not found.");
+            removeItemFromOrder(removeItem, removeQuantity);
+        }
+        return;
     }
 
-    // Continue listening for more commands if the order is not finalized
-    if (document.querySelectorAll('#order-items tr').length > 0) {
-        startVoiceRecognition();  // Keep mic active if there are items in the order
+    if (matchedItem) {
+        addToOrder(matchedItem, quantity, items[matchedItem]);
+        updateChat('app', `${quantity} ${matchedItem}${quantity > 1 ? 's' : ''} added to your order.`);
+        
+        const additionalPrompts = [
+            "Anything else?",
+            "Anything more you'd like?",
+            "Can I get you anything else?",
+            "Shall I add something else to your order?",
+            "Would you like something more with that?"
+        ];
+        
+        const randomPrompt = additionalPrompts[Math.floor(Math.random() * additionalPrompts.length)];
+        updateChat('app', randomPrompt);
+    } else {
+        updateChat('app', "Oops, it's not available.");
     }
 }
 
+// Remove item from order display
+function removeItemFromOrder(itemName, quantity) {
+    const orderItems = document.getElementById('order-items');
+    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText.toLowerCase() === itemName);
+
+    if (existingRow) {
+        const quantityCell = existingRow.cells[1];
+        const priceCell = existingRow.cells[2];
+        const currentQty = parseInt(quantityCell.innerText);
+
+        if (currentQty >= quantity) {
+            const newQty = currentQty - quantity;
+            if (newQty > 0) {
+                quantityCell.innerText = newQty;
+                priceCell.innerText = newQty * parseInt(priceCell.innerText) / currentQty;
+                updateChat('app', `${quantity} ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
+            } else {
+                existingRow.remove();
+                updateChat('app', `All ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
+            }
+        } else {
+            updateChat('app', `You only have ${currentQty} ${itemName}${quantity > 1 ? 's' : ''} in your order.`);
+        }
+    } else {
+        updateChat('app', `No ${itemName}s found in your order.`);
+    }
+}
 
 // Add item to order display
-// Add item to order display with quantity and price updates
 function addToOrder(itemName, quantity, price) {
     const orderItems = document.getElementById('order-items');
     let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText === itemName);
@@ -219,12 +223,13 @@ function addToOrder(itemName, quantity, price) {
     } else {
         // Item doesn't exist: create a new row
         const orderItem = document.createElement('tr');
-        orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
+        orderItem.innerHTML = `<td>${itemName}</td>
+        <td>${quantity}</td>
+        <td>${price * quantity}</td>
+        <td><i class="fas fa-trash-alt" style="cursor: pointer;" onclick="removeItemFromOrder(this)"></i></td>`;
         orderItems.appendChild(orderItem);
-        
     }
 }
-
 
 // Finalize the order and send to the server
 function finalizeOrder() {
@@ -274,13 +279,14 @@ function displayTotalAmount(total) {
     document.getElementById('chat').appendChild(totalMessage);
 
     // Speak the total amount
-    speakText(`Your total amount is ₹${total}`);
+    speakText(`Your Orders on the way...`)
+    
     generateQRCode(total);
 }
 
 function generateQRCode(total) {
     const upiID = "9025370065@ybl";  // Replace with your UPI ID
-    const payeeName = "Sivanesh";  // Replace with the payee name
+    const payeeName = "KOVAI KULAMBI";  // Replace with the payee name
     const upiLink = `upi://pay?pa=${upiID}&pn=${payeeName}&mc=1234&tid=transactionId&am=${total}&cu=INR&url=https://your-merchant-website.com`; // Transaction details
 
     // Clear previous QR code
