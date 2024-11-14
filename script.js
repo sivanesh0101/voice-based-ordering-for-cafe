@@ -83,48 +83,34 @@ function updateChat(sender, message) {
     }
 }
 
-function removeFromOrder(itemName, quantity) {
-    const orderItems = document.getElementById('order-items');
-    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText === itemName);
-
-    if (existingRow) {
-        const quantityCell = existingRow.cells[1];
-        const priceCell = existingRow.cells[2];
-        const currentQty = parseInt(quantityCell.innerText);
-
-        if (currentQty >= quantity) {
-            const newQty = currentQty - quantity;
-            if (newQty > 0) {
-                quantityCell.innerText = newQty;
-                priceCell.innerText = newQty * items[itemName];
-                updateChat('app', `${quantity} ${itemName} removed from your order.`);
-            } else {
-                existingRow.remove();
-                updateChat('app', `All ${itemName}s removed from your order.`);
-            }
-        } else {
-            updateChat('app', `You only have ${currentQty} ${itemName}(s) in your order.`);
-        }
-    } else {
-        updateChat('app', `Oops, there are no ${itemName}s in your order to remove.`);
-    }
-}
-
-// Process the voice command for ordering
+// Process the voice command for ordering and removing items
 function processOrder(transcript) {
     const items = {
-        "cappuccino": 50, "espresso": 60, "cold coffee": 120, "cold mocha": 150,
-        "red velvet cake": 415, "filter coffee": 70, "flat white": 40,
-        "belgian chocolate": 180, "chocolate shake": 200, "sandwich": 70,
-        "garlic bread": 60, "veg burger": 120, "veg pizza": 150, 
-        "cheesecake": 165, "vanilla scoop": 165, "strawberry cake": 165
+        "cappuccino": 50, 
+        "espresso": 60, 
+        "cold coffee": 120, 
+        "cold mocha": 150, 
+        "red velvet cake": 415,
+        "filter coffee": 70, 
+        "flat white": 40,
+        "belgian chocolate": 180,
+        "chocolate shake": 200,
+        "sandwich": 70,
+        "garlic bread": 60,
+        "veg burger": 120,
+        "veg pizza": 150,
+        "cheesecake": 165,
+        "vanilla scoop": 165,
+        "strawberry cake": 165 
     };
 
+    let matchedItem = null;
+    let quantity = 1; // Default to 1
+
+    // Print user's voice input
     updateChat('user', transcript);
 
-    let matchedItem = null;
-    let quantity = 1;
-
+    // Check if the transcript contains an item for ordering
     for (const item in items) {
         if (transcript.includes(item)) {
             matchedItem = item;
@@ -132,39 +118,50 @@ function processOrder(transcript) {
         }
     }
 
-    const removeMatch = transcript.match(/remove\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)?\s*(.*)/i);
-    if (removeMatch) {
-        const quantityStr = removeMatch[1] ? removeMatch[1].toLowerCase() : "one";
-        const itemName = removeMatch[2].trim();
-        const quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr);
-        removeFromOrder(itemName, quantity);
-        return;
-    }
-
+    // Check for quantity in transcript (supports both numeric and word-based quantities)
     const qtyMatch = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/i);
     if (qtyMatch) {
         const quantityStr = qtyMatch[0].toLowerCase();
-        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr);
+        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr); // Convert to number
     }
 
+    // Greetings
     const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
     if (greetings.some(greet => transcript.includes(greet))) {
         updateChat('app', "Hello, Order something you like!");
+        return; // Exit the function after greeting response
+    }
+
+    // Check if user finalizes the order
+    if (transcript.includes("finalize") || 
+        transcript.includes("final") || 
+        transcript.includes("enough") || 
+        transcript.includes("that's all") || 
+        transcript.includes("finish the order") || 
+        transcript.includes("confirm the order") || 
+        transcript.includes("wrap it up") || 
+        transcript.includes("that's it")) {
+        finalizeOrder();
         return;
     }
 
-    if (transcript.includes("finalize") || 
-        transcript.includes("final") || 
-        transcript.includes("that's all") ||
-        transcript.includes("that's it") || 
-        transcript.includes("confirm the order")) {
-        finalizeOrder();
+    // Check if user wants to remove items
+    if (transcript.includes("remove")) {
+        const removeMatch = transcript.match(/remove (\d+|one|two|three|four|five|six|seven|eight|nine|ten)?\s*(.*)/);
+        if (removeMatch) {
+            const removeQtyStr = removeMatch[1] ? removeMatch[1].toLowerCase() : 'one';
+            const removeItem = removeMatch[2].toLowerCase();
+            const removeQuantity = isNaN(removeQtyStr) ? numberMap[removeQtyStr] : parseInt(removeQtyStr);
+
+            removeItemFromOrder(removeItem, removeQuantity);
+        }
         return;
     }
 
     if (matchedItem) {
         addToOrder(matchedItem, quantity, items[matchedItem]);
         updateChat('app', `${quantity} ${matchedItem}${quantity > 1 ? 's' : ''} added to your order.`);
+        
         const additionalPrompts = [
             "Anything else?",
             "Anything more you'd like?",
@@ -180,8 +177,35 @@ function processOrder(transcript) {
     }
 }
 
+// Remove item from order display
+function removeItemFromOrder(itemName, quantity) {
+    const orderItems = document.getElementById('order-items');
+    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText.toLowerCase() === itemName);
+
+    if (existingRow) {
+        const quantityCell = existingRow.cells[1];
+        const priceCell = existingRow.cells[2];
+        const currentQty = parseInt(quantityCell.innerText);
+
+        if (currentQty >= quantity) {
+            const newQty = currentQty - quantity;
+            if (newQty > 0) {
+                quantityCell.innerText = newQty;
+                priceCell.innerText = newQty * parseInt(priceCell.innerText) / currentQty;
+                updateChat('app', `${quantity} ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
+            } else {
+                existingRow.remove();
+                updateChat('app', `All ${itemName}${quantity > 1 ? 's' : ''} removed from your order.`);
+            }
+        } else {
+            updateChat('app', `You only have ${currentQty} ${itemName}${quantity > 1 ? 's' : ''} in your order.`);
+        }
+    } else {
+        updateChat('app', `No ${itemName}s found in your order.`);
+    }
+}
+
 // Add item to order display
-// Add item to order display with quantity and price updates
 function addToOrder(itemName, quantity, price) {
     const orderItems = document.getElementById('order-items');
     let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText === itemName);
@@ -199,11 +223,13 @@ function addToOrder(itemName, quantity, price) {
     } else {
         // Item doesn't exist: create a new row
         const orderItem = document.createElement('tr');
-        orderItem.innerHTML = `<td>${itemName}</td><td>${quantity}</td><td>${price * quantity}</td>`;
+        orderItem.innerHTML = `<td>${itemName}</td>
+        <td>${quantity}</td>
+        <td>${price * quantity}</td>
+        <td><i class="fas fa-trash-alt" style="cursor: pointer;" onclick="removeItemFromOrder(this)"></i></td>`;
         orderItems.appendChild(orderItem);
     }
 }
-
 
 // Finalize the order and send to the server
 function finalizeOrder() {
@@ -257,6 +283,7 @@ function displayTotalAmount(total) {
     
     generateQRCode(total);
 }
+
 function generateQRCode(total) {
     const upiID = "9025370065@ybl";  // Replace with your UPI ID
     const payeeName = "KOVAI KULAMBI";  // Replace with the payee name
