@@ -83,34 +83,48 @@ function updateChat(sender, message) {
     }
 }
 
+function removeFromOrder(itemName, quantity) {
+    const orderItems = document.getElementById('order-items');
+    let existingRow = Array.from(orderItems.rows).find(row => row.cells[0].innerText === itemName);
+
+    if (existingRow) {
+        const quantityCell = existingRow.cells[1];
+        const priceCell = existingRow.cells[2];
+        const currentQty = parseInt(quantityCell.innerText);
+
+        if (currentQty >= quantity) {
+            const newQty = currentQty - quantity;
+            if (newQty > 0) {
+                quantityCell.innerText = newQty;
+                priceCell.innerText = newQty * items[itemName];
+                updateChat('app', `${quantity} ${itemName} removed from your order.`);
+            } else {
+                existingRow.remove();
+                updateChat('app', `All ${itemName}s removed from your order.`);
+            }
+        } else {
+            updateChat('app', `You only have ${currentQty} ${itemName}(s) in your order.`);
+        }
+    } else {
+        updateChat('app', `Oops, there are no ${itemName}s in your order to remove.`);
+    }
+}
+
 // Process the voice command for ordering
 function processOrder(transcript) {
     const items = {
-        "cappuccino": 50, 
-        "espresso": 60, 
-        "cold coffee": 120, 
-        "cold mocha": 150, 
-        "red velvet cake": 415,
-        "filter coffee": 70, 
-        "flat white": 40,
-        "belgian chocolate": 180,
-        "chocolate shake": 200,
-        "sandwich": 70,
-        "garlic bread": 60,
-        "veg burger": 120,
-        "veg pizza": 150,
-        "cheesecake": 165,
-        "vanilla scoop": 165,
-        "strawberry cake": 165 
+        "cappuccino": 50, "espresso": 60, "cold coffee": 120, "cold mocha": 150,
+        "red velvet cake": 415, "filter coffee": 70, "flat white": 40,
+        "belgian chocolate": 180, "chocolate shake": 200, "sandwich": 70,
+        "garlic bread": 60, "veg burger": 120, "veg pizza": 150, 
+        "cheesecake": 165, "vanilla scoop": 165, "strawberry cake": 165
     };
 
-    let matchedItem = null;
-    let quantity = 1; // Default to 1
-
-    // Print user's voice input
     updateChat('user', transcript);
 
-    // Check if the transcript contains an item
+    let matchedItem = null;
+    let quantity = 1;
+
     for (const item in items) {
         if (transcript.includes(item)) {
             matchedItem = item;
@@ -118,31 +132,32 @@ function processOrder(transcript) {
         }
     }
 
-    // Check for quantity in transcript (supports both numeric and word-based quantities)
+    const removeMatch = transcript.match(/remove\s+(\d+|one|two|three|four|five|six|seven|eight|nine|ten)?\s*(.*)/i);
+    if (removeMatch) {
+        const quantityStr = removeMatch[1] ? removeMatch[1].toLowerCase() : "one";
+        const itemName = removeMatch[2].trim();
+        const quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr);
+        removeFromOrder(itemName, quantity);
+        return;
+    }
+
     const qtyMatch = transcript.match(/(\d+|one|two|three|four|five|six|seven|eight|nine|ten)/i);
     if (qtyMatch) {
         const quantityStr = qtyMatch[0].toLowerCase();
-        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr); // Convert to number
+        quantity = isNaN(quantityStr) ? numberMap[quantityStr] : parseInt(quantityStr);
     }
 
-    //Greetings
+    const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
+    if (greetings.some(greet => transcript.includes(greet))) {
+        updateChat('app', "Hello, Order something you like!");
+        return;
+    }
 
-        const greetings = ["hi", "hello", "hey", "good morning", "good afternoon", "good evening"];
-        if (greetings.some(greet => transcript.includes(greet))) {
-            updateChat('app', "Hello, Order something you like!");
-            return; // Exit the function after greeting response
-        }
- 
-
-    // Check if user finalizes the order
     if (transcript.includes("finalize") || 
         transcript.includes("final") || 
-        transcript.includes("enough") || 
-        transcript.includes("that's all") || 
-        transcript.includes("finish the order") || 
-        transcript.includes("confirm the order") || 
-        transcript.includes("wrap it up") || 
-        transcript.includes("that's it")) {
+        transcript.includes("that's all") ||
+        transcript.includes("that's it") || 
+        transcript.includes("confirm the order")) {
         finalizeOrder();
         return;
     }
@@ -150,7 +165,6 @@ function processOrder(transcript) {
     if (matchedItem) {
         addToOrder(matchedItem, quantity, items[matchedItem]);
         updateChat('app', `${quantity} ${matchedItem}${quantity > 1 ? 's' : ''} added to your order.`);
-        
         const additionalPrompts = [
             "Anything else?",
             "Anything more you'd like?",
@@ -164,7 +178,6 @@ function processOrder(transcript) {
     } else {
         updateChat('app', "Oops, it's not available.");
     }
-    
 }
 
 // Add item to order display
@@ -246,7 +259,7 @@ function displayTotalAmount(total) {
 }
 function generateQRCode(total) {
     const upiID = "9025370065@ybl";  // Replace with your UPI ID
-    const payeeName = "Sivanesh";  // Replace with the payee name
+    const payeeName = "KOVAI KULAMBI";  // Replace with the payee name
     const upiLink = `upi://pay?pa=${upiID}&pn=${payeeName}&mc=1234&tid=transactionId&am=${total}&cu=INR&url=https://your-merchant-website.com`; // Transaction details
 
     // Clear previous QR code
